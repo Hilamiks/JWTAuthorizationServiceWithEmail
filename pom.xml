@@ -10,7 +10,7 @@
     </parent>
     <groupId>com.hailmik</groupId>
     <artifactId>LorbyProject</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>0.0.1</version>
     <name>LorbyProject</name>
     <description>LorbyProject</description>
     <properties>
