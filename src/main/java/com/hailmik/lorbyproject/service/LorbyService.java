@@ -1,5 +1,6 @@
 package com.hailmik.lorbyproject.service;
 
+import com.hailmik.lorbyproject.dto.AuthenticationResponse;
 import com.hailmik.lorbyproject.dto.RegistrationDTO;
 import com.hailmik.lorbyproject.dto.UserDTO;
 import com.hailmik.lorbyproject.entity.User;
@@ -8,6 +9,8 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -22,24 +25,24 @@ public class LorbyService {
 	private final UserRepository userRepository;
 	private final PasswordEncoder encoder;
 	private final EmailService emailService;
-	public ResponseEntity<String> login(UserDTO user) {
-		Optional<User> savedUser = userRepository.findByUsername(user.getUsername());
-		ResponseEntity<String> response;
-		System.out.println(savedUser.get());
-		System.out.println("encoded pword: " + encoder.encode(user.getPassword()));
-		if (savedUser.isEmpty()) {
-			response = new ResponseEntity<>("Fail", HttpStatus.UNAUTHORIZED);
-		} else if (!savedUser.get().isEnabled()) {
-			response = new ResponseEntity<>("Unvalidated email", HttpStatus.UNAUTHORIZED);
-		}
-		else if (encoder.matches(user.getPassword(), savedUser.get().getPassword())) {
-			response = new ResponseEntity<>("Success", HttpStatus.OK);
-			System.out.println(savedUser);
-		}
-		else {
-			response = new ResponseEntity<>("Fail", HttpStatus.UNAUTHORIZED);
-		}
-		return response;
+	private final JwtService jwtService;
+	private final AuthenticationManager authenticationManager;
+	public ResponseEntity<Object> login(UserDTO user) {
+		System.out.println(user.getUsername());
+		System.out.println(user.getPassword());
+		authenticationManager.authenticate(
+			new UsernamePasswordAuthenticationToken(
+				user.getUsername(),
+				user.getPassword()
+			)
+		);
+
+		User savedUser = userRepository.findByUsername(user.getUsername())
+			.orElseThrow();
+
+		String token = jwtService.generateToken(savedUser);
+
+		return ResponseEntity.ok(new AuthenticationResponse(token));
 	}
 
 	public ResponseEntity<Object> createNewUser(RegistrationDTO user) {
@@ -68,7 +71,7 @@ public class LorbyService {
 				"Confirmation Code from Lorby",
 				generatedCode);
 			userRepository.save(newUser);
-			response = new ResponseEntity<>(newUser, HttpStatus.CREATED);
+			response = new ResponseEntity<>(newUser.getEmail(), HttpStatus.CREATED);
 		}
 		return response;
 	}
@@ -87,8 +90,6 @@ public class LorbyService {
 			"Confirmation Code from Lorby",
 			generatedCode);
 	}
-
-
 	public User findByEmail(String email) {
 		return userRepository.findByEmail(email).get();
 	}
@@ -105,11 +106,25 @@ public class LorbyService {
 	public User deleteByEmail(String email) {
 		User user = userRepository.findByEmail(email).get();
 		userRepository.delete(user);
-		System.out.println(user);
 		return user;
 	}
 
 	public void saveUser(User user) {
 		userRepository.save(user);
+	}
+
+	public boolean validates(RegistrationDTO user) {
+		String email = user.getEmail();
+		String username = user.getUsername();
+		String password = user.getPassword();
+
+		return email != null
+			&& username != null
+			&& password != null
+			&& !email.isBlank()
+			&& email.contains("@")
+			&& email.contains(".")
+			&& !username.isBlank()
+			&& !password.isBlank();
 	}
 }

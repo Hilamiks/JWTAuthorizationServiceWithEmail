@@ -4,7 +4,6 @@ import com.hailmik.lorbyproject.dto.ConfirmationDTO;
 import com.hailmik.lorbyproject.dto.RegistrationDTO;
 import com.hailmik.lorbyproject.dto.UserDTO;
 import com.hailmik.lorbyproject.entity.User;
-import com.hailmik.lorbyproject.service.EmailService;
 import com.hailmik.lorbyproject.service.LorbyService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -13,7 +12,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Random;
 
 @RestController
 @RequiredArgsConstructor
@@ -38,12 +36,15 @@ public class LorbyController {
 	}
 
 	@PostMapping("/auth/login")
-	public ResponseEntity<String> login(@RequestBody UserDTO user) {
+	public ResponseEntity<Object> login(@RequestBody UserDTO user) {
 		return lorbyService.login(user);
 	}
 	@PostMapping("/auth/register")
 	public ResponseEntity<Object> register(@RequestBody RegistrationDTO user) {
-		return lorbyService.createNewUser(user);
+		if (lorbyService.validates(user)) {
+			return lorbyService.createNewUser(user);
+		}
+		return ResponseEntity.badRequest().body("Invalid data sent");
 	}
 	@PostMapping("/auth/confirm/{email}")
 	public void confirm(@PathVariable String email) {

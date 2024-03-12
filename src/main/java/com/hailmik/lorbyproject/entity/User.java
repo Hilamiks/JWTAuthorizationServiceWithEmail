@@ -1,9 +1,6 @@
 package com.hailmik.lorbyproject.entity;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -30,7 +27,8 @@ public class User implements UserDetails {
 	private boolean isEnabled;
 	private LocalDateTime codeReceived;
 	private String generatedCode;
-	private Role role;
+	@Enumerated(EnumType.STRING)
+	private Role role = Role.USER;
 
 	@Override
 	public Collection<? extends GrantedAuthority> getAuthorities() {
