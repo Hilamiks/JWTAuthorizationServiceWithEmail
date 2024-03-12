@@ -22,18 +22,18 @@ public class LorbyController {
 		return "Check success";
 	}
 
-	@GetMapping("/user/{email}")
-	public User getUser(@PathVariable String email) {
-		return lorbyService.findByEmail(email);
-	}
-	@GetMapping("/auth/users")
-	public List<User> getUsers() {
-		return lorbyService.findAll();
-	}
-	@DeleteMapping("/delete/{email}")
-	public User deleteUser(@PathVariable String email) {
-		return lorbyService.deleteByEmail(email);
-	}
+//	@GetMapping("/user/{email}")
+//	public User getUser(@PathVariable String email) {
+//		return lorbyService.findByEmail(email);
+//	}
+//	@GetMapping("/auth/users")
+//	public List<User> getUsers() {
+//		return lorbyService.findAll();
+//	}
+//	@DeleteMapping("/delete/{email}")
+//	public User deleteUser(@PathVariable String email) {
+//		return lorbyService.deleteByEmail(email);
+//	}
 
 	@PostMapping("/auth/login")
 	public ResponseEntity<Object> login(@RequestBody UserDTO user) {
@@ -64,9 +64,9 @@ public class LorbyController {
 		ResponseEntity<Object> response;
 		if (current.minusMinutes(15).isBefore(user.getCodeReceived())) {
 			if (code.equals(user.getGeneratedCode())) {
-				response = new ResponseEntity<>(user, HttpStatus.OK);
 				user.setEnabled(true);
 				lorbyService.saveUser(user);
+				response = new ResponseEntity<>("User confirmed", HttpStatus.OK);
 			} else {
 				response = new ResponseEntity<>("Fail", HttpStatus.UNAUTHORIZED);
 			}
