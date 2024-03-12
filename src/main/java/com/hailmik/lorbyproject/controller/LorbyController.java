@@ -16,38 +16,36 @@ import java.util.List;
 import java.util.Random;
 
 @RestController
-@RequestMapping("/api")
 @RequiredArgsConstructor
 public class LorbyController {
 	private final LorbyService lorbyService;
-	private final EmailService emailService;
-//	@GetMapping("/check")
-//	public String check() {
-//		return "Check success";
-//	}
+	@GetMapping("/check")
+	public String check() {
+		return "Check success";
+	}
 
-//	@GetMapping("/user/{email}")
-//	public User getUser(@PathVariable String email) {
-//		return lorbyService.findByEmail(email);
-//	}
-//	@GetMapping("/users")
-//	public List<User> getUsers() {
-//		return lorbyService.findAll();
-//	}
-//	@DeleteMapping("/delete/{email}")
-//	public User deleteUser(@PathVariable String email) {
-//		return lorbyService.deleteByEmail(email);
-//	}
+	@GetMapping("/user/{email}")
+	public User getUser(@PathVariable String email) {
+		return lorbyService.findByEmail(email);
+	}
+	@GetMapping("/auth/users")
+	public List<User> getUsers() {
+		return lorbyService.findAll();
+	}
+	@DeleteMapping("/delete/{email}")
+	public User deleteUser(@PathVariable String email) {
+		return lorbyService.deleteByEmail(email);
+	}
 
-	@PostMapping("/login")
+	@PostMapping("/auth/login")
 	public ResponseEntity<String> login(@RequestBody UserDTO user) {
 		return lorbyService.login(user);
 	}
-	@PostMapping("/register")
+	@PostMapping("/auth/register")
 	public ResponseEntity<Object> register(@RequestBody RegistrationDTO user) {
 		return lorbyService.createNewUser(user);
 	}
-	@PostMapping("/confirm/{email}")
+	@PostMapping("/auth/confirm/{email}")
 	public void confirm(@PathVariable String email) {
 		User user = lorbyService.findByEmail(email);
 		if (user.getCodeReceived().minusMinutes(15L).isAfter(LocalDateTime.now())) {
@@ -55,7 +53,7 @@ public class LorbyController {
 		}
 	}
 
-	@PostMapping("/code")
+	@PostMapping("/auth/code")
 	public ResponseEntity<Object> confirmCode(@RequestBody ConfirmationDTO confirmation) {
 		String code = confirmation.getCode();
 		String email = confirmation.getEmail();
